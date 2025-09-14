@@ -1,5 +1,6 @@
+
 import panel as pn
-from huggingface_hub import AsyncInferenceClient
+import requests
 import os
 from dotenv import load_dotenv
 
@@ -8,12 +9,11 @@ pn.extension()
 
 
 async def callback(contents: str, user: str, instance: pn.chat.ChatInterface):
-
-    # memory is a list of messages
     messages = instance.serialize()
     prompt = '\n'.join([m['content'] for m in messages if m['role'] == 'user'])
     GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-    GEMINI_API_URL = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={GEMINI_API_KEY}'
+    GEMINI_MODEL = 'gemini-1.5-flash' 
+    GEMINI_API_URL = f'https://generativelanguage.googleapis.com/v1/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}'
     payload = {
         "contents": [{"parts": [{"text": prompt}]}]
     }
@@ -22,15 +22,21 @@ async def callback(contents: str, user: str, instance: pn.chat.ChatInterface):
     message = ""
     if response.ok:
         data = response.json()
-        part = data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', None)
+        part = None
+        if "candidates" in data and data["candidates"]:
+            candidate = data["candidates"][0]
+            if "content" in candidate and "parts" in candidate["content"] and candidate["content"]["parts"]:
+                part = candidate["content"]["parts"][0].get("text", None)
         if part:
             message += part
             yield message
+        else:
+            yield "No response from Gemini API."
     else:
-        yield f"Gemini API error: {response.status_code}"
+        error_msg = response.text
+        yield f"Gemini API error: {response.status_code} - {error_msg}"
 
 
-aclient = AsyncInferenceClient(token=os.getenv('HF_API_KEY'))
 
 chat_interface = pn.chat.ChatInterface(
     callback=callback,

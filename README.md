@@ -80,10 +80,18 @@ Or all together:
 ```bash
 panel serve src/advanced.py src/basic.py src/report_assisstant.py
 ```
-Then go to your browser and type:
+
+#### Integrate Panel App in React
+To show the Python Panel app inside your React frontend, add an iframe in your React component:
+
+```jsx
+<iframe
+   src="http://localhost:5006/"
+   title="MediBot Panel"
+   style={{ width: '100%', height: '800px', border: 'none' }}
+/>
 ```
-http://localhost:5006/
-```
+Place this in any React component (e.g., `App.js`) to embed the Panel dashboard UI directly in your React app.
 
 ## Features
 

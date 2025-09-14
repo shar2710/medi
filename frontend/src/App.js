@@ -74,6 +74,15 @@ function App() {
         ))}
       </div>
 
+      <div style={{ margin: '3rem auto', maxWidth: '1200px', width: '100%' }}>
+        <h2 style={{ textAlign: 'center', color: '#4a69bd', marginBottom: '1rem' }}>Panel Dashboard</h2>
+        <iframe
+          src="http://localhost:5006/"
+          title="MediBot Panel"
+          style={{ width: '100%', height: '800px', border: 'none' }}
+        />
+      </div>
+
       <footer style={footerStyle}>
         &copy; 2025 MediBot. All rights reserved.
       </footer>
