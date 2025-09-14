@@ -3,6 +3,15 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const fetch = require('node-fetch'); 
+// const app = express(); // Removed duplicate declaration
+// ...existing code...
+// require or import from './src/advanced.py', './src/basic.py', etc.
+// ...existing code...
+require('dotenv').config();
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const fetch = require('node-fetch'); 
 const app = express();
 app.use(cors());
 app.use(express.json());

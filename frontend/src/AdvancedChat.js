@@ -8,13 +8,19 @@ function AdvancedChat() {
   const handleSend = async () => {
     if (!input.trim()) return;
     setLoading(true);
-    const res = await fetch('/api/advanced-chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: input })
-    });
-    const data = await res.json();
-    setReply(data.reply);
+    setReply('');
+    try {
+      const res = await fetch('/api/advanced-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: input })
+      });
+      if (!res.ok) throw new Error('Server error');
+      const data = await res.json();
+      setReply(data.reply || 'No response.');
+    } catch (err) {
+      setReply('Error: ' + err.message);
+    }
     setLoading(false);
   };
 

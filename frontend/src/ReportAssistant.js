@@ -12,14 +12,20 @@ function ReportAssistant() {
   const handleSend = async () => {
     if (!file) return;
     setLoading(true);
-    // Placeholder: No actual PDF upload yet
-    const res = await fetch('/api/report-assistant', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({})
-    });
-    const data = await res.json();
-    setReply(data.reply);
+    setReply('');
+    try {
+      // Placeholder: No actual PDF upload yet
+      const res = await fetch('/api/report-assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+      });
+      if (!res.ok) throw new Error('Server error');
+      const data = await res.json();
+      setReply(data.reply || 'No response.');
+    } catch (err) {
+      setReply('Error: ' + err.message);
+    }
     setLoading(false);
   };
 
