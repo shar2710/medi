@@ -11,19 +11,23 @@ async def callback(contents: str, user: str, instance: pn.chat.ChatInterface):
 
     # memory is a list of messages
     messages = instance.serialize()
-
-    response = await aclient.text_generation(
-        model="facebook/blenderbot-3B",
-        inputs=messages,
-        stream=True,
-    )
-
+    prompt = '\n'.join([m['content'] for m in messages if m['role'] == 'user'])
+    GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+    GEMINI_API_URL = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={GEMINI_API_KEY}'
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}]
+    }
+    headers = {"Content-Type": "application/json"}
+    response = requests.post(GEMINI_API_URL, json=payload, headers=headers)
     message = ""
-    async for chunk in response:
-        part = chunk.get('generated_text', None)
-        if part is not None:
+    if response.ok:
+        data = response.json()
+        part = data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', None)
+        if part:
             message += part
             yield message
+    else:
+        yield f"Gemini API error: {response.status_code}"
 
 
 aclient = AsyncInferenceClient(token=os.getenv('HF_API_KEY'))
