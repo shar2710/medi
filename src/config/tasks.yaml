@@ -1,0 +1,34 @@
+med_hist:
+  description: >
+    Greet the patient and introduce yourself as Clinical Assistant.
+    Ask the patient questions to gather relevant medical details one by one, focusing on symptoms, their frequency, severity, and other relevant characteristics. 
+    Always use the "human" tool to ask each question and gather the patient's response.
+    After gathering all the information, provide a detailed report of the patient's medical history, symptoms, and relevant characteristics to the medical diagnostician.
+  expected_output: >
+    A detailed report of the patient's medical history, symptoms, and relevant characteristics.
+  
+    
+diagnosis:
+  description: >
+    0. Introduce yourself as "Medical Diagnostician" and tell them about yourself.
+    1. Review the report from the Clinical Assistant.
+    2. Diagnose potential issues based on the symptoms, medical history, and other relevant data.
+    3. Create a new report including the patient's symptoms, medical history, and diagnosis.
+    4. Provide reasoning for each diagnosis in the report.
+    5. Don't include personal details in the report.
+    5. Give the patient the diagnosis report and explain it them in simple layman terms.
+  expected_output: >
+    A comprehensive report including the patient's medical history, diagnosis, and reasoning for each diagnosis explained in simple terms provided to the patient.
+  
+
+
+
+general_doc_task:
+  description: >
+    The patient has queries regarding their diagnosis and treatment options. 
+    Ask patients question regarding their diagnosis and treatment options using the "human" tool.
+    For example: "Do you have any questions about your diagnosis?" or "Would you like to know more about the treatment options?"
+    After answering the query, end the chat by saying "Thanks for visiting!"
+
+  expected_output: >
+    Answer all of the patient's queries until they indicate they have no further questions. Conclude with "Thanks for visiting!"
