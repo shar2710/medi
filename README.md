@@ -123,6 +123,5 @@ Place this in any React component (e.g., `App.js`) to embed the Panel dashboard 
 ### YAML Configuration Files
 - **Agents Configuration (`config/agents.yaml`)**: Defines the agents involved in the diagnostic process.
 - **Tasks Configuration (`config/tasks.yaml`)**: Specifies the tasks and the sequence of their execution.
-
 ---
 © 2025 MediBot. All rights reserved.
