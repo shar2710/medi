@@ -1,7 +1,7 @@
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 from langchain.agents import load_tools
-from langchain_community.chat_models import ChatHuggingFace
+import requests
 from dotenv import load_dotenv
 from langchain_core.callbacks import BaseCallbackHandler
 from typing import Any, Dict
@@ -92,15 +92,37 @@ class HealthCrew():
     tasks_config = 'config/tasks.yaml'
 
     def __init__(self) -> None:
-        self.hf_llm = ChatHuggingFace(model_name="facebook/blenderbot-3B", hf_api_key=os.getenv('HF_API_KEY'))
+        self.gemini_api_key = os.getenv('GEMINI_API_KEY')
+        self.gemini_model = 'gemini-1.5-flash'
+        self.gemini_api_url = f'https://generativelanguage.googleapis.com/v1/models/{self.gemini_model}:generateContent?key={self.gemini_api_key}'
         self.human = load_tools(["human"],input_func = custom_ask_human_input)
+
+    def gemini_llm(self, prompt: str) -> str:
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}]
+        }
+        headers = {"Content-Type": "application/json"}
+        response = requests.post(self.gemini_api_url, json=payload, headers=headers)
+        if response.ok:
+            data = response.json()
+            part = None
+            if "candidates" in data and data["candidates"]:
+                candidate = data["candidates"][0]
+                if "content" in candidate and "parts" in candidate["content"] and candidate["content"]["parts"]:
+                    part = candidate["content"]["parts"][0].get("text", None)
+            if part:
+                return part
+            else:
+                return "No response from Gemini API."
+        else:
+            return f"Gemini API error: {response.status_code} - {response.text}"
 
 
     @agent
     def medical_interviewer(self) -> Agent:
         return Agent(
             config = self.agents_config['Clinical_Assistant'],
-            llm = self.hf_llm,
+            llm = self.gemini_llm,
             callbacks = [MyCustomHandler("Clinical Assistant")],
             tools = self.human
         )
@@ -109,7 +131,7 @@ class HealthCrew():
     def medical_diagnostician(self) -> Agent:
         return Agent(
             config = self.agents_config['Medical_Exp'],
-            llm = self.hf_llm,
+            llm = self.gemini_llm,
             callbacks = [MyCustomHandler("Medical Exp")],
         )
 
@@ -117,7 +139,7 @@ class HealthCrew():
     def doctor(self) -> Agent:
         return Agent(
             config = self.agents_config['General_Doctor'],
-            llm = self.hf_llm,
+            llm = self.gemini_llm,
             callbacks = [MyCustomHandler("General Doctor")],
             tools = self.human
         ) 
@@ -180,6 +202,3 @@ template = pn.template.FastListTemplate(
 thread = threading.Thread(target=initiate_chat)
 thread.start()
 template.servable()
-
-
-

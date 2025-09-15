@@ -1,47 +1,36 @@
 import os
 import tempfile
 import panel as pn
-from langchain.chains import RetrievalQA
-from langchain.document_loaders import PyPDFLoader
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.text_splitter import CharacterTextSplitter
-from langchain.vectorstores import Chroma
-from langchain_community.chat_models import ChatHuggingFace
-import os
+import requests
 from dotenv import load_dotenv
 
 load_dotenv()
-
 pn.extension()
 
 
 @pn.cache
-def initialize_chain(pdf, k, chain):
-    # load document
-    with tempfile.NamedTemporaryFile("wb", delete=False) as f:
-        f.write(pdf)
-
-    file_name = f.name
-    loader = PyPDFLoader(file_name)
-    documents = loader.load()
-    # split the documents into chunks
-    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-    texts = text_splitter.split_documents(documents)
-    # select which embeddings we want to use
-    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2",hf_api_key=os.getenv("HF_API_KEY"))
-    # create the vectorestore to use as the index
-    db = Chroma.from_documents(texts, embeddings)
-    # expose this index in a retriever interface
-    retriever = db.as_retriever(search_type="similarity", search_kwargs={"k": k})
-    # create a chain to answer questions
-    qa = RetrievalQA.from_chain_type(
-        llm=ChatHuggingFace(model_name="facebook/blenderbot-3B", hf_api_key=os.getenv("HF_API_KEY")),
-        chain_type=chain,
-        retriever=retriever,
-        return_source_documents=True,
-        verbose=True,
-    )
-    return qa
+def gemini_llm(prompt: str) -> str:
+    gemini_api_key = os.getenv('GEMINI_API_KEY')
+    gemini_model = 'gemini-1.5-flash'
+    gemini_api_url = f'https://generativelanguage.googleapis.com/v1/models/{gemini_model}:generateContent?key={gemini_api_key}'
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}]
+    }
+    headers = {"Content-Type": "application/json"}
+    response = requests.post(gemini_api_url, json=payload, headers=headers)
+    if response.ok:
+        data = response.json()
+        part = None
+        if "candidates" in data and data["candidates"]:
+            candidate = data["candidates"][0]
+            if "content" in candidate and "parts" in candidate["content"] and candidate["content"]["parts"]:
+                part = candidate["content"]["parts"][0].get("text", None)
+        if part:
+            return part
+        else:
+            return "No response from Gemini API."
+    else:
+        return f"Gemini API error: {response.status_code} - {response.text}"
 
 
 def respond(contents, user, chat_interface):
@@ -49,55 +38,49 @@ def respond(contents, user, chat_interface):
     if chat_interface.active == 0:
         chat_interface.active = 1
         yield {"user": "MediBot Report Assisstat", "value": "What do you want to ask"}
-
         contents.seek(0)
         pn.state.cache["pdf"] = contents.read()
         return
 
-    qa = initialize_chain(pn.state.cache["pdf"], k_slider.value, chain_select.value)
-    if key_input.value:
-        os.environ["HF_API_KEY"] = os.getenv("HF_API_KEY")
-    else:
-        os.environ["HF_API_KEY"] = os.getenv("HF_API_KEY")
-
-    response = qa({"query": contents})
-    answers = pn.Accordion(("Response", response["result"]))
-    for doc in response["source_documents"][::-1]:
-        answers.append((f"Snippet from page {doc.metadata['page']}", doc.page_content))
-    answers.active = [0, 1]
+    # For simplicity, just send the raw PDF text to Gemini
+    pdf_text = str(contents)
+    response = gemini_llm(pdf_text)
+    answers = pn.Accordion(("Response", response))
+    answers.active = [0]
     yield {"user": "MediBot Report Assisstant", "value": answers}
 
 
-# sidebar widgets
-key_input = pn.widgets.PasswordInput(
-    name="OpenAI Key",
-    placeholder="sk-...",
-)
-k_slider = pn.widgets.IntSlider(
-    name="Number of Relevant Chunks", start=1, end=5, step=1, value=2
-)
-chain_select = pn.widgets.RadioButtonGroup(
-    name="Chain Type", options=["stuff", "map_reduce", "refine", "map_rerank"]
-)
+## Removed sidebar widgets and options not needed for Gemini logic
 
-sidebar = pn.Column(key_input, k_slider, chain_select)
 
-# main widgets
-pdf_input = pn.widgets.FileInput(accept=".pdf", value="", height=50)
-chat_input = pn.chat.ChatAreaInput(placeholder="First, upload your report!")
+# Modern Panel UI
+pdf_input = pn.widgets.FileInput(accept=".pdf", value="", height=60, width=350)
+chat_input = pn.chat.ChatAreaInput(placeholder="Type your question about the report...", width=350)
 chat_interface = pn.chat.ChatInterface(
-    help_text="Please upload your report you need help with",
+    help_text="Upload your medical report (PDF) and ask any question about it.",
     callback=respond,
     sizing_mode="stretch_width",
     widgets=[pdf_input, chat_input],
     callback_exception="verbose",
+    avatar="https://cdn-icons-png.flaticon.com/512/3774/3774299.png",
+    show_history=True,
+    show_user_name=False,
+    show_timestamp=True,
 )
 chat_interface.active = 0
 
-# layout
-template = pn.template.FastListTemplate(
-    title='Report Assisstant',
-    main=[chat_interface],
+template = pn.template.MaterialTemplate(
+    title="MediBot Report Assistant",
+    main=[pn.Column(
+        pn.pane.Markdown("## 📄 Report Assistant\nUpload your medical report and ask questions about it!", style={"color": "#4a69bd", "font-size": "1.5rem", "margin-bottom": "1rem"}),
+        chat_interface,
+        width=400,
+        margin=(30, 0, 0, 0)
+    )],
+    accent="#4a69bd",
+    header_background="#f0f4ff",
+    theme_toggle=True,
     site="MediBot",
-    site_url="/report_assisstant",)
+    site_url="/report_assisstant",
+)
 template.servable()

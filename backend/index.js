@@ -23,60 +23,57 @@ app.get('/', (req, res) => {
   res.send('MERN Backend Running');
 });
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_MODEL = 'gemini-1.5-flash'; 
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+const { spawn } = require('child_process');
 
-
-async function geminiChat(prompt) {
-  try {
-    const response = await fetch(GEMINI_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }]
-      }),
+function runPythonScript(script, args = []) {
+  return new Promise((resolve, reject) => {
+    const py = spawn('python', [script, ...args]);
+    let data = '';
+    let error = '';
+    py.stdout.on('data', (chunk) => { data += chunk; });
+    py.stderr.on('data', (chunk) => { error += chunk; });
+    py.on('close', (code) => {
+      if (code === 0) {
+        resolve(data);
+      } else {
+        reject(error || `Python script exited with code ${code}`);
+      }
     });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ Gemini API error:', response.status, errorText);
-      return `Gemini API error: ${response.status} - ${errorText}`;
-    }
-
-    const data = await response.json();
-    console.log('Gemini Response:', data);
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || 'No text generated.';
-  } catch (err) {
-    console.error('❌ Gemini API fetch error:', err);
-    return `Gemini API fetch error: ${err.message}`;
-  }
+  });
 }
+
 
 app.post('/api/advanced-chat', async (req, res) => {
   const { message } = req.body;
   try {
-    const reply = await geminiChat(message);
-    res.json({ reply });
+    const result = await runPythonScript('./src/advanced.py', [message]);
+    res.json({ reply: result });
   } catch (err) {
-    res.status(500).json({ error: 'Gemini API error', details: err.message });
+    res.status(500).json({ error: 'Python error', details: err });
   }
 });
+
 
 app.post('/api/basic-chat', async (req, res) => {
   const { message } = req.body;
   try {
-    const reply = await geminiChat(message);
-    res.json({ reply });
+    const result = await runPythonScript('./src/basic.py', [message]);
+    res.json({ reply: result });
   } catch (err) {
-    res.status(500).json({ error: 'Gemini API error', details: err.message });
+    res.status(500).json({ error: 'Python error', details: err });
   }
 });
 
+
 app.post('/api/report-assistant', async (req, res) => {
-  res.json({ reply: 'Report assistant feature coming soon.' });
+  // For file uploads, you may need to handle multipart/form-data and pass the file path to Python
+  // Here, just call the Python script for demonstration
+  try {
+    const result = await runPythonScript('./src/report_assisstant.py');
+    res.json({ reply: result });
+  } catch (err) {
+    res.status(500).json({ error: 'Python error', details: err });
+  }
 });
 
 const PORT = process.env.PORT || 5000;

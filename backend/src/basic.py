@@ -11,14 +11,14 @@ pn.extension()
 async def callback(contents: str, user: str, instance: pn.chat.ChatInterface):
     messages = instance.serialize()
     prompt = '\n'.join([m['content'] for m in messages if m['role'] == 'user'])
-    GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-    GEMINI_MODEL = 'gemini-1.5-flash' 
-    GEMINI_API_URL = f'https://generativelanguage.googleapis.com/v1/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}'
+    gemini_api_key = os.getenv('GEMINI_API_KEY')
+    gemini_model = 'gemini-1.5-flash'
+    gemini_api_url = f'https://generativelanguage.googleapis.com/v1/models/{gemini_model}:generateContent?key={gemini_api_key}'
     payload = {
         "contents": [{"parts": [{"text": prompt}]}]
     }
     headers = {"Content-Type": "application/json"}
-    response = requests.post(GEMINI_API_URL, json=payload, headers=headers)
+    response = requests.post(gemini_api_url, json=payload, headers=headers)
     message = ""
     if response.ok:
         data = response.json()
