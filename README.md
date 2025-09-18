@@ -2,16 +2,6 @@
 # MediBot
 MediBot is a suite of advanced medical chatbots designed to assist with various healthcare tasks. The project is organized into three main applications: Basic, Report Assistant, and Advanced, each providing specialized functionalities for different use cases.
 
-## Table of Contents
-- Introduction
-- Demo Video
-- Installation
-- Usage
-- Features
-- Dependencies
-- Configuration
-- Contributors
-
 ## Introduction
 MediBot is designed to offer medical assistance through interactive chat interfaces. It utilizes Google's Gemini API to provide responses and facilitate conversations tailored to medical contexts. The project includes:
 
@@ -19,15 +9,13 @@ MediBot is designed to offer medical assistance through interactive chat interfa
 - **Report Assistant**: Assists with report analysis and answers questions based on provided documents.
 - **Advanced**: A comprehensive medical diagnostic system with multiple agents and tasks.
 
-## Demo Video
-Demo Video
 
 ## Installation
 To set up MediBot, follow these steps:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/MediBot.git
+   git clone https://github.com/yourusername/medi.git
    cd MediBot
    ```
 2. Create and activate a Python virtual environment (for backend Python logic):
