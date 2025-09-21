@@ -2,6 +2,5 @@ crewai
 langchain
 langchain_community
 langchain_core
-openai
 panel
 python-dotenv
