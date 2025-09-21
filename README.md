@@ -1,91 +1,62 @@
-# 🩺 MediBot
 
-**MediBot** is a suite of **AI-powered medical chatbots** designed to assist with various healthcare tasks.
-It provides three main applications — **Basic**, **Report Assistant**, and **Advanced**, each tailored for different healthcare workflows.
+# MediBot
+MediBot is a suite of advanced medical chatbots designed to assist with various healthcare tasks. The project is organized into three main applications: Basic, Report Assistant, and Advanced, each providing specialized functionalities for different use cases.
 
----
+## Table of Contents
+- Introduction
+- Demo Video
+- Installation
+- Usage
+- Features
+- Dependencies
+- Configuration
+- Contributors
 
-## 📚 Table of Contents
+## Introduction
+MediBot is designed to offer medical assistance through interactive chat interfaces. It utilizes Google's Gemini API to provide responses and facilitate conversations tailored to medical contexts. The project includes:
 
-* [Introduction](#-introduction)
-* [Installation](#-installation)
-* [Usage](#-usage)
+- **Basic**: A simple chat interface for basic medical queries.
+- **Report Assistant**: Assists with report analysis and answers questions based on provided documents.
+- **Advanced**: A comprehensive medical diagnostic system with multiple agents and tasks.
 
-  * [Run Basic](#run-basic)
-  * [Run Report Assistant](#run-report-assistant)
-  * [Run Advanced](#run-advanced)
-  * [Run All Together](#run-all-together)
-* [Features](#-features)
-* [Dependencies](#-dependencies)
-* [Configuration](#-configuration)
-* [Project Structure](#-project-structure)
+## Demo Video
+Demo Video
 
----
+## Installation
+To set up MediBot, follow these steps:
 
-## 📝 Introduction
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/MediBot.git
+   cd MediBot
+   ```
+2. Create and activate a Python virtual environment (for backend Python logic):
+   ```bash
+   python3 -m venv env
+   source env/bin/activate
+   ```
+3. Install backend dependencies:
+   ```bash
+   cd backend
+   npm install
+   pip install -r requirements.txt
+   ```
+4. Install frontend dependencies:
+   ```bash
+   cd ../frontend
+   npm install
+   ```
+5. Set up environment variables:
+   - Create a `.env` file in the `backend` directory.
+   - Add your Gemini API key:
+     ```
+     GEMINI_API_KEY=your_gemini_api_key
+     ```
 
-**MediBot** leverages **GEMINI** and **multi-agent systems** to provide interactive, intelligent, and context-aware medical assistance.
+## Usage
 
-It consists of three specialized applications:
-
-* **Basic** – A simple chatbot for answering general medical queries.
-* **Report Assistant** – Analyze uploaded reports (PDFs or text) and answer questions based on their content.
-* **Advanced** – A comprehensive diagnostic tool using multiple specialized agents for step-by-step medical workflows.
-
----
-
-## ⚙️ Installation
-
-Follow these steps to set up MediBot:
-
-### **1. Clone the Repository**
-
-```bash
-git clone https://github.com/shar2710/medi.git
-cd medi
-```
-
----
-
-### **2. Create and Activate a Virtual Environment**
-
-```bash
-python3 -m venv env
-source env/bin/activate      # On Linux/Mac
-env\Scripts\activate         # On Windows
-```
-
----
-
-### **3. Install Dependencies**
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-### **4. Set Up Environment Variables**
-
-Create a `.env` file in the project root (`src/` or main directory):
-
-```
-GEMINI_API_KEY=your_api_key_here
-```
-
----
-
-## 💻 Usage
-
-MediBot applications are powered by **Panel**.
-You can serve each application individually or all at once.
-
----
-
-### **Run Basic**
-
-A simple chatbot for general medical queries.
-
+### Backend
+Start the backend server:
 ```bash
 panel serve src/basic.py 
 ```
@@ -117,104 +88,50 @@ panel serve src/advanced.py
 Serve all three applications together and select between them via a unified interface.
 
 ```bash
-panel serve src/advanced.py src/basic.py src/report_assistant.py 
+panel serve src/advanced.py src/basic.py src/report_assisstant.py
 ```
 
-Access the dashboard at:
-[http://localhost:5006/](http://localhost:5006/)
+#### Integrate Panel App in React
+To show the Python Panel app inside your React frontend, add an iframe in your React component:
 
----
-
-## ✨ Features
-
-
-### **Basic**
-
-* Simple medical query chatbot.
-* Real-time responses using **Google Gemini API**.
-
-
-### **Report Assistant**
-
-* Upload and analyze **PDF medical reports**.
-* Ask questions and get context-aware answers based on report contents.
-
-
-### **Advanced**
-
-* Multi-agent system with specialized roles powered by **CrewAI** and **LangChain**:
-  * **Medical Interviewer** – Collects patient information.
-  * **Medical Diagnostician** – Provides analysis based on gathered data.
-  * **General Doctor** – Suggests treatment or next steps.
-* **Sequential task execution** for end-to-end diagnostics.
-* Fully customizable workflows via YAML configuration.
-
----
-
-## 📦 Dependencies
-
-These are the key libraries required for MediBot:
-
-* `panel` – Web UI framework
-* `python-dotenv` – Environment variable management
-* `requests` – HTTP requests for API calls
-* `crewai` – Multi-agent system management
-* `langchain` – Language model orchestration
-* `langchain_community` – Community tools for LangChain
-* `langchain_core` – Core utilities for LangChain
-* `PyPDF2` – PDF parsing (if used in Report Assistant)
-
-Install them all at once with:
-
-```bash
-pip install -r requirements.txt
+```jsx
+<iframe
+   src="http://localhost:5006/"
+   title="MediBot Panel"
+   style={{ width: '100%', height: '800px', border: 'none' }}
+/>
 ```
+Place this in any React component (e.g., `App.js`) to embed the Panel dashboard UI directly in your React app.
 
+## Features
+
+**Basic:**
+- Simple chat interface
+- Real-time responses using Gemini API
+
+**Report Assistant:**
+- Upload PDF reports for analysis
+- Retrieve answers to queries based on the content of the reports (Gemini API)
+
+**Advanced:**
+- Multi-agent system with specific roles (Medical Interviewer, Medical Diagnostician, General Doctor)
+- Sequential task processing for comprehensive diagnostics
+- Customizable human interface for interaction (Gemini API)
+
+## Dependencies
+
+- panel
+- dotenv
+- langchain
+- chroma
+- crew
+- crewai
+- requests
+
+## Configuration
+
+### YAML Configuration Files
+- **Agents Configuration (`config/agents.yaml`)**: Defines the agents involved in the diagnostic process.
+- **Tasks Configuration (`config/tasks.yaml`)**: Specifies the tasks and the sequence of their execution.
 ---
-
-## 🔧 Configuration
-
-MediBot uses **YAML configuration files** for easy customization.
-
-* **`config/agents.yaml`** – Define agents, their roles, and behaviors.
-* **`config/tasks.yaml`** – Define tasks and specify their sequential flow.
-
----
-
-## 📂 Project Structure
-
-
-```
-MediBot/
-│
-├── README.md                # Project documentation
-├── requirements.txt         # Python dependencies
-├── .env                     # Environment variables
-│
-└── src/
-  ├── advanced.py          # Advanced MediBot (multi-agent system)
-  ├── basic.py             # Basic MediBot (simple chatbot)
-  ├── report_assistant.py  # Report analysis assistant
-  │
-  └── config/
-    ├── agents.yaml      # Agent configuration
-    └── tasks.yaml       # Task configuration
-```
-
----
-
-
-## 📝 License
-
-This project is licensed under the [MIT License](LICENSE).
-
----
-
-## 🌟 Future Roadmap
-
-* Support for **FHIR/HL7 standards** to integrate with real healthcare systems.
-* Multi-language support for reports and queries.
-* PDF-to-structured-data parsing for richer insights.
-* Web-based drag-and-drop interface for non-technical users.
-* Integration with wearable health device data.
-
+© 2025 MediBot. All rights reserved.
